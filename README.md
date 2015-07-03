@@ -1,7 +1,6 @@
 # FenixEdu_iOS_API
 
-
- * 
+A Swift Library to access FenixEdu's API services. Still in a very early stage,  it aims to provide iOS developers with a quick and safe way to consume FenixEdu's REST API and develop amazing apps. 
 
 ### Getting started:
 
@@ -32,6 +31,18 @@ myFenixInstance.getCanteen { (canteenData) -> () in
 // This code will be executed when the URL request ends.
 }
 ```
+
+### To-Do:
+
+ * ~~Public Endpoints~~
+ * ~~Private Endpoints~~
+ * Code -> Access token exchange (scheduled for 0.9).
+ * Unit Testing (scheduled for 1.0).
+ 
+### Version History:
+
+#### 0.8:
+Public and Private endpoints.
 
 
 ### More info:

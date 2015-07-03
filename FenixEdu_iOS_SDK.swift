@@ -11,8 +11,6 @@ import Foundation
 
 /**
     A Swift iOS Wrapper to access FenixEdu's API
-
-    This class spawns a background delegate queue and NSURLSession to carry out network requests. This is entended to be
 */
 public class FenixEdu_iOS_SDK: NSObject, NSURLSessionTaskDelegate {
     
@@ -79,7 +77,12 @@ public class FenixEdu_iOS_SDK: NSObject, NSURLSessionTaskDelegate {
         self.delegateQueue.maxConcurrentOperationCount = 1
         
         // Setup the NSURLSession
-        let backgroundSessionConfigurator = NSURLSessionConfiguration.backgroundSessionConfigurationWithIdentifier("FenixEdu_iOS_SDK Background Session - \(random())")
+        let backgroundSessionConfigurator : NSURLSessionConfiguration
+        if #available(iOS 8.0, *) {
+            backgroundSessionConfigurator = NSURLSessionConfiguration.backgroundSessionConfigurationWithIdentifier("FenixEdu_iOS_SDK Background Session - \(random())")
+        } else {
+            backgroundSessionConfigurator = NSURLSessionConfiguration.backgroundSessionConfiguration("FenixEdu_iOS_SDK Background Session - \(random())")
+        }
         self.backgroundURLSession = NSURLSession(configuration: backgroundSessionConfigurator, delegate: self, delegateQueue: self.delegateQueue)
         
     }
@@ -87,77 +90,6 @@ public class FenixEdu_iOS_SDK: NSObject, NSURLSessionTaskDelegate {
     deinit{
         self.backgroundURLSession.invalidateAndCancel()
         self.delegateQueue.cancelAllOperations()
-    }
-    
-    /**
-    Returns the authentication URL for the CAS login page.
-    
-    :returns:                 The CAS authentication login URL.
-    */
-    public func getAuthenticationURL() -> NSURL {
-        return NSURL(string: self.APIBaseURL + "oauth/userdialog?client_id=\(self.clientID)&redirect_uri=\(self.redirectURL)")!
-    }
-    
-    /**
-    Forces a refresh of the access token. This will fail if there isn't a refresh token set.
-    Also, please note that a new access token will be automatically requested whenever the refresh token is changed.
-    */
-    public func refreshAccessToken(optionalHandler : (()->())? = nil){
-        
-        // Check if the required paramters are set
-        if refreshToken == nil{
-            assertionFailure("Error: Can't refresh access token without a valid refresh token")
-        }
-        
-        // Setup the required paramters
-        let requestParameters : [String: String] = ["client_id" : self.clientID,
-                                                    "client_secret" : self.clientSecret,
-                                                    "refresh_token" : self.refreshToken!,
-                                                    "grant_type" : "refresh_token",
-                                                    "httpMethod" : "POST"]
-        
-        
-        // Setup the block that will handle the URL response
-        let responseHandler : APIResponseBlock = {APIResponseBlock in
-            var parseErrorHandler : NSError? = nil
-            
-            func failRefreshParsing() {
-                print("An error occured while parsing the refresh token data. Data: \(APIResponseBlock.data) \n ResponseBlock: \(APIResponseBlock.httpResponse) \n Parse Error: \(parseErrorHandler)")
-                //return;
-            }
-            
-            // Check if the refresh token is valid
-            if APIResponseBlock.httpResponse!.statusCode == 401 {
-                print("Error: The provided refresh token is no longer valid. Access Token refresh failed.")
-                return;
-            }
-            
-            // FIXME: Missing clientID / clientSecret revocation check
-            
-            do {
-                let parsedData = try NSJSONSerialization.JSONObjectWithData(APIResponseBlock.data!, options: NSJSONReadingOptions.MutableLeaves) as! NSDictionary
-                // Try to parse the response to grab the access token and expire period
-                
-                guard let accessToken = parsedData["access_token"], let expires_in = parsedData["expires_in"] else {
-                    failRefreshParsing()
-                    return;
-                }
-                
-                // Update internal variables:
-                self.accessToken = accessToken as? String
-                self.accessTokenExpireDate = NSDate(timeInterval: Double(expires_in as! NSNumber), sinceDate: NSDate())
-                
-                if optionalHandler != nil{
-                    optionalHandler!()
-                }
-                
-            } catch {
-                failRefreshParsing()
-            }
-        }
-
-        // Perform the Async HTTP Request
-        self.makeHTTPRequest(APIRefreshTokenURL!, parameters: requestParameters, callbackHandler: responseHandler)
     }
     
     private func makeParamterStringFromDictionary(parameters :[String:String]) -> String{
@@ -246,9 +178,87 @@ public class FenixEdu_iOS_SDK: NSObject, NSURLSessionTaskDelegate {
     }
     
     
+    // MARK: Public Authentication Methods
+    
+    /**
+    Returns the authentication URL for the CAS login page.
+    
+    :returns:                 The CAS authentication login URL.
+    */
+    public func getAuthenticationURL() -> NSURL {
+        return NSURL(string: self.APIBaseURL + "oauth/userdialog?client_id=\(self.clientID)&redirect_uri=\(self.redirectURL)")!
+    }
     
     
+    /**
+    Forces a refresh of the access token. This will fail if there isn't a refresh token set.
+    Also, please note that a new access token will be automatically requested whenever the refresh token is changed.
+    */
+    public func refreshAccessToken(optionalHandler : (()->())? = nil){
+        
+        // Check if the required paramters are set
+        if refreshToken == nil{
+            assertionFailure("Error: Can't refresh access token without a valid refresh token")
+        }
+        
+        // Setup the required paramters
+        let requestParameters : [String: String] = ["client_id" : self.clientID,
+            "client_secret" : self.clientSecret,
+            "refresh_token" : self.refreshToken!,
+            "grant_type" : "refresh_token",
+            "httpMethod" : "POST"]
+        
+        
+        // Setup the block that will handle the URL response
+        let responseHandler : APIResponseBlock = {APIResponseBlock in
+            var parseErrorHandler : NSError? = nil
+            
+            func failRefreshParsing() {
+                print("An error occured while parsing the refresh token data. Data: \(APIResponseBlock.data) \n ResponseBlock: \(APIResponseBlock.httpResponse) \n Parse Error: \(parseErrorHandler)")
+                //return;
+            }
+            
+            // Check if the refresh token is valid
+            if APIResponseBlock.httpResponse!.statusCode == 401 {
+                print("Error: The provided refresh token is no longer valid. Access Token refresh failed.")
+                return;
+            }
+            
+            // FIXME: Missing clientID / clientSecret revocation check
+            
+            do {
+                let parsedData = try NSJSONSerialization.JSONObjectWithData(APIResponseBlock.data!, options: NSJSONReadingOptions.MutableLeaves) as! NSDictionary
+                // Try to parse the response to grab the access token and expire period
+                
+                guard let accessToken = parsedData["access_token"], let expires_in = parsedData["expires_in"] else {
+                    failRefreshParsing()
+                    return;
+                }
+                
+                // Update internal variables:
+                self.accessToken = accessToken as? String
+                self.accessTokenExpireDate = NSDate(timeInterval: Double(expires_in as! NSNumber), sinceDate: NSDate())
+                
+                if optionalHandler != nil{
+                    optionalHandler!()
+                }
+                
+            } catch {
+                failRefreshParsing()
+            }
+        }
+        
+        // Perform the Async HTTP Request
+        self.makeHTTPRequest(APIRefreshTokenURL!, parameters: requestParameters, callbackHandler: responseHandler)
+    }
     
+    
+    /**
+    Opens the application authorization prompt in the systemms's default browser
+    */
+    public func startExternalAuthentication(){
+        UIApplication.sharedApplication().openURL(NSURL(string: "https://fenix.tecnico.ulisboa.pt/oauth/userdialog?client_id=\(self.clientID)&redirect_uri=\(self.redirectURL)")!)
+    }
     
     
     // MARK: Public Endpoints
