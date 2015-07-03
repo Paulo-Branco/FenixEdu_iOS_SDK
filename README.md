@@ -7,13 +7,13 @@
 
 To initialize an instance of the API just use the designated initializer passing in your client ID, client secret and redirect URL.
 
-```objective-c
+```swift
 var myFenixEduInstance = FenixEdu_iOS_SDK(clientID: "CLIENT_ID", clientSecret: "CLIENT_SECRET", redirectURL: "REDIRECT_URL")
 ```
 
 To perform private requests you'll need an access token which can be retrieved with the user's refresh token. To set it, just set the refreshToken property with the correct value:
 
-```objective-c
+```swift
 myFenixEduInstance.refreshToken = "USER'S REFRESH TOKEN"
 ```
 
@@ -25,7 +25,7 @@ This API leverages the lastest URLSession frameworks to provide you with safe me
 
 As an example, if you wish to retrieve canteen information for the next week, simply add the following code:
 
-```objective-c
+```swift
 myFenixInstance.getCanteen { (canteenData) -> () in 
 // Perform data validation, parsing and persistence 
 
