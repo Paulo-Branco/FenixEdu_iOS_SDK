@@ -639,6 +639,273 @@ public class FenixEdu_iOS_SDK: NSObject, NSURLSessionTaskDelegate {
     
     
     
+    
+    
+    
+    
+    // MARK: Private Endpoints
+    
+    
+    /** This endpoint allows to access the current person information. An example response can be found in http://fenixedu.org/dev/api/#toc_37
+    
+    :param: completionBlock         The closure to be executed when the network request completes
+    
+    :returns: Returns an NSDictionary with the parsed JSON data.
+    */
+    public func getPerson(completionBlock: (personData: NSDictionary?)->()) {
+        
+        let handlerBlock : APIResponseBlock = {APIResponseBlock in
+            
+            guard let data = APIResponseBlock.data else {
+                completionBlock(personData: nil)
+                return;
+            }
+            
+            do {
+                let parsedData = try NSJSONSerialization.JSONObjectWithData(data, options: NSJSONReadingOptions.MutableLeaves) as? NSDictionary
+                completionBlock(personData: parsedData)
+            } catch {
+                completionBlock(personData: nil)
+            }
+        }
+        
+        APIPrivateRequest(personEndpoint, parameters: nil, callbackHandler: handlerBlock)
+    }
+    
+    /** This endpoint returns the user's class information. This information can be retrieved both in iCalendar and JSON formats. An example response can be found in http://fenixedu.org/dev/api/#toc_40
+    
+    :param: format                  The format of the calendar info to be returned. Currently available options are "calendar" or "json".
+    :param: completionBlock         The closure to be executed when the network request completes
+    
+    :returns: Returns an NSDictionary with the parsed JSON data.
+    */
+    public func getPersonClassesCalendarWithFormat(format: String? = "json", completionBlock: (personData: NSDictionary?)->()) {
+        
+        let handlerBlock : APIResponseBlock = {APIResponseBlock in
+            
+            guard let data = APIResponseBlock.data else {
+                completionBlock(personData: nil)
+                return;
+            }
+            
+            do {
+                let parsedData = try NSJSONSerialization.JSONObjectWithData(data, options: NSJSONReadingOptions.MutableLeaves) as? NSDictionary
+                completionBlock(personData: parsedData)
+            } catch {
+                completionBlock(personData: nil)
+            }
+        }
+        
+        // Setup parameters
+        let requestParameters = ["format" : format!]
+        
+        APIPrivateRequest(personEndpoint + "/" + calendarEndpoint + "/" + classesEndpoint, parameters: requestParameters, callbackHandler: handlerBlock)
+    }
+    
+    /** This endpoint returns the students's evaluations information. This information can be retrieved both in iCalendar and JSON formats. An example response can be found in http://fenixedu.org/dev/api/#toc_44
+    
+    :param: format                  The format of the calendar info to be returned. Currently available options are "calendar" or "json".
+    :param: completionBlock         The closure to be executed when the network request completes
+    
+    :returns: Returns an NSDictionary with the parsed JSON data.
+    */
+    public func getPersonEvaluationsCalendarWithFormat(format: String? = "json", completionBlock: (personData: NSDictionary?)->()) {
+        
+        let handlerBlock : APIResponseBlock = {APIResponseBlock in
+            
+            guard let data = APIResponseBlock.data else {
+                completionBlock(personData: nil)
+                return;
+            }
+            
+            do {
+                let parsedData = try NSJSONSerialization.JSONObjectWithData(data, options: NSJSONReadingOptions.MutableLeaves) as? NSDictionary
+                completionBlock(personData: parsedData)
+            } catch {
+                completionBlock(personData: nil)
+            }
+        }
+        
+        // Setup parameters
+        let requestParameters = ["format" : format!]
+        
+        APIPrivateRequest(personEndpoint + "/" + calendarEndpoint + "/" + evaluationsEndpoint, parameters: requestParameters, callbackHandler: handlerBlock)
+    }
+    
+    /** This endpoint allows to access the student's complete curriculum. Thereby it is only available for students. An example response can be found in http://fenixedu.org/dev/api/#toc_52
+    
+    :param: format                  The format of the calendar info to be returned. Currently available options are "calendar" or "json".
+    :param: completionBlock         The closure to be executed when the network request completes
+    
+    :returns: Returns an NSDictionary with the parsed JSON data.
+    */
+    public func getPersonCurriculum(completionBlock: (personData: NSArray?)->()) {
+        
+        let handlerBlock : APIResponseBlock = {APIResponseBlock in
+            
+            guard let data = APIResponseBlock.data else {
+                completionBlock(personData: nil)
+                return;
+            }
+            
+            do {
+                let parsedData = try NSJSONSerialization.JSONObjectWithData(data, options: NSJSONReadingOptions.MutableLeaves) as? NSArray
+                completionBlock(personData: parsedData)
+            } catch {
+                completionBlock(personData: nil)
+            }
+        }
+        
+        APIPrivateRequest(personEndpoint + "/" + curriculumEndpoint, parameters: nil, callbackHandler: handlerBlock)
+    }
+    
+    /** This endpoint returns the user's course information. If no academicTerm is defined it returns the degree information for the current Academic Term. An example response can be found in http://fenixedu.org/dev/api/#toc_48
+    
+    :param: academicTerm            The academic term of which you want to get information about
+    :param: completionBlock         The closure to be executed when the network request completes
+    
+    :returns: Returns an NSDictionary with the parsed JSON data.
+    */
+    public func getPersonCoursesWithAcademicTerm(academicTerm: String?, completionBlock: (personData: NSDictionary?)->()) {
+        
+        let handlerBlock : APIResponseBlock = {APIResponseBlock in
+            
+            guard let data = APIResponseBlock.data else {
+                completionBlock(personData: nil)
+                return;
+            }
+            
+            do {
+                let parsedData = try NSJSONSerialization.JSONObjectWithData(data, options: NSJSONReadingOptions.MutableLeaves) as? NSDictionary
+                completionBlock(personData: parsedData)
+            } catch {
+                completionBlock(personData: nil)
+            }
+        }
+        
+        // Setup parameters
+        var requestParameters : [String:String]? = nil
+        if academicTerm != nil{
+            requestParameters = ["academicTerm" : academicTerm!]
+        }
+        
+        APIPrivateRequest(personEndpoint + "/" + coursesEndpoint, parameters: requestParameters, callbackHandler: handlerBlock)
+    }
+    
+    /** This endpoint returns the student's written evaluation information. An example response can be found in http://fenixedu.org/dev/api/#toc_55
+    
+    :param: completionBlock         The closure to be executed when the network request completes
+    
+    :returns: Returns an NSDictionary with the parsed JSON data.
+    */
+    public func getPersonEvaluations(completionBlock: (personData: NSArray?)->()) {
+        
+        let handlerBlock : APIResponseBlock = {APIResponseBlock in
+            
+            guard let data = APIResponseBlock.data else {
+                completionBlock(personData: nil)
+                return;
+            }
+            
+            do {
+                let parsedData = try NSJSONSerialization.JSONObjectWithData(data, options: NSJSONReadingOptions.MutableLeaves) as? NSArray
+                completionBlock(personData: parsedData)
+            } catch {
+                completionBlock(personData: nil)
+            }
+        }
+        
+        APIPrivateRequest(personEndpoint + "/" + evaluationsEndpoint, parameters: nil, callbackHandler: handlerBlock)
+    }
+    
+    /** This endpoint returns the student's written evaluation information for a single evaluation. You need to provide the evaluation ID of the resource you are trying to access. An example response can be found in http://fenixedu.org/dev/api/#toc_55
+    
+    :param: evaluationID            The evaluation ID of the item you want to query the API for.
+    :param: completionBlock         The closure to be executed when the network request completes
+    
+    :returns: Returns an NSDictionary with the parsed JSON data.
+    */
+    public func getPersonEvaluationsWithEvaluationID(evaluationID : String, completionBlock: (personData: NSDictionary?)->()) {
+        
+        let handlerBlock : APIResponseBlock = {APIResponseBlock in
+            
+            guard let data = APIResponseBlock.data else {
+                completionBlock(personData: nil)
+                return;
+            }
+            
+            do {
+                let parsedData = try NSJSONSerialization.JSONObjectWithData(data, options: NSJSONReadingOptions.MutableLeaves) as? NSDictionary
+                completionBlock(personData: parsedData)
+            } catch {
+                completionBlock(personData: nil)
+            }
+        }
+        
+        APIPrivateRequest(personEndpoint + "/" + evaluationsEndpoint + "/" + String(evaluationID), parameters: nil, callbackHandler: handlerBlock)
+    }
+    
+    /** This endpoint allows the student to enroll or disenroll from a written evaluation. You need to provide the evaluation ID of the resource you are trying to access. An example response can be found in http://fenixedu.org/dev/api/#toc_58
+    
+    :param: evaluationID            The evaluation ID of the item you want to query the API for.
+    :param: shouldEnrol             A boolean to set the enrolment status for the evaluation item with the specified ID.
+    :param: completionBlock         The closure to be executed when the network request completes
+    
+    :returns: Returns an NSDictionary with the parsed JSON data.
+    */
+    public func enrolInEvaluationWithEvaluationID(evaluationID : String, shouldEnrol: Bool, completionBlock: (personData: NSArray?)->()) {
+        
+        let handlerBlock : APIResponseBlock = {APIResponseBlock in
+            
+            guard let data = APIResponseBlock.data else {
+                completionBlock(personData: nil)
+                return;
+            }
+            
+            do {
+                let parsedData = try NSJSONSerialization.JSONObjectWithData(data, options: NSJSONReadingOptions.MutableLeaves) as? NSArray
+                completionBlock(personData: parsedData)
+            } catch {
+                completionBlock(personData: nil)
+            }
+        }
+        
+        // Setup parameters
+        let requestParameters = ["enrol" : (shouldEnrol ? "yes" : "no")]
+        
+        APIPrivateRequest(personEndpoint + "/" + evaluationsEndpoint + "/" + String(evaluationID), parameters: requestParameters, callbackHandler: handlerBlock)
+    }
+    
+    /**  This endpoint returns user's payments information. An example response can be found in http://fenixedu.org/dev/api/#toc_58
+    
+    :param: completionBlock         The closure to be executed when the network request completes
+    
+    :returns: Returns an NSDictionary with the parsed JSON data.
+    */
+    public func getPersonPayments(completionBlock: (personData: NSDictionary?)->()) {
+        
+        let handlerBlock : APIResponseBlock = {APIResponseBlock in
+            
+            guard let data = APIResponseBlock.data else {
+                completionBlock(personData: nil)
+                return;
+            }
+            
+            do {
+                let parsedData = try NSJSONSerialization.JSONObjectWithData(data, options: NSJSONReadingOptions.MutableLeaves) as? NSDictionary
+                completionBlock(personData: parsedData)
+            } catch {
+                completionBlock(personData: nil)
+            }
+        }
+        
+        APIPrivateRequest(personEndpoint + "/" + paymentsEndpoint, parameters: nil, callbackHandler: handlerBlock)
+    }
+    
+    
+    
+    
+    
     // MARK: NSURLSession Delegate Protocol
     
     public func URLSession(session: NSURLSession,
